@@ -4,10 +4,11 @@ Description: Query the RFCV database
 License: GPL-3 + file LICENSE
 Version: 0.1.0
 Depends: R (>= 3.0.0)
-Imports: RMySQL
+Imports: DBI
 Authors@R: c(
 	person("Timothée", "Flutre", email = "timothee.flutre@supagro.inra.fr", role = c("aut", "cre")),
 	person("Thierry", "Lacombe", email = "thierry.lacombe@supagro.inra.fr", role = c("ctb")))
 URL: https://github.com/lacombe-vigne/rfcvquery
 BugReports: https://github.com/lacombe-vigne/rfcvquery/issues
 LazyData: true
+Encoding: UTF-8
