@@ -17,7 +17,16 @@ data.frame of variety codes and names
 \description{
 Return the variety/population codes and names from a set of introduction/accession codes.
 }
+\examples{
+\dontrun{## obviously, you must have read access to the database
+library(RMySQL)
+library(getPass)
+conn <- dbConnect(drv=MySQL(), host="...", dbname="...",
+                  user="...", password=getPass())
+getVarietyCodeName(conn, c("23297Mtp13", "23298Mtp28"))
+on.exit(dbDisconnect(con))
+}
+}
 \author{
 Timothée Flutre
 }
-

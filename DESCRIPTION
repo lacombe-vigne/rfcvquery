@@ -1,17 +1,20 @@
 Package: rfcvquery
 Title: Query the RFCV database
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: c(
-	person("Timothée", "Flutre", email = "timothee.flutre@supagro.inra.fr", role = c("aut", "cre")),
-	person("Thierry", "Lacombe", email = "thierry.lacombe@supagro.inra.fr", role = c("ctb")))
+	person("Timothée", "Flutre", email = "timothee.flutre@inra.fr", role = c("aut", "cre")),
+	person("Thierry", "Lacombe", email = "thierry.lacombe@inra.fr", role = c("ctb")))
 Description: Query the RFCV database.
+License: AGPL-3
+Copyright: Institut National de la Recherche Agronomique (INRA)
+URL: https://github.com/lacombe-vigne/rfcvquery
+BugReports: https://github.com/lacombe-vigne/rfcvquery/issues
 Depends:
   R (>= 3.0.0),
   DBI
-License: GPL-3
-Copyright: Institut National de la Recherche Agronomique (INRA)
+Suggests:
+  getPass,
+  RMySQL
 LazyData: true
-URL: https://github.com/lacombe-vigne/rfcvquery
-BugReports: https://github.com/lacombe-vigne/rfcvquery/issues
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Encoding: UTF-8
