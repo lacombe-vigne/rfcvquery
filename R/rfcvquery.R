@@ -21,33 +21,35 @@
 ##' Return the introduction/accession names from a set of introduction/accession codes.
 ##' @param conn a DBIConnection object, as produced by dbConnect
 ##' @param intro.codes vector of introduction codes ("CodeIntro")
-##' @return vector of introduction names
+##' @return data frame of introduction codes and names
 ##' @author Timothée Flutre
 ##' @examples
 ##' \dontrun{## obviously, you must have read access to the database
-##' library(RMySQL)
+##' library(rfcvquery)
 ##' library(getPass)
 ##' conn <- dbConnect(drv=MySQL(), host="...", dbname="...",
 ##'                   user="...", password=getPass())
-##' getIntroName(conn, c("23297Mtp13", "23298Mtp28"))
-##' on.exit(dbDisconnect(con))
+##' getIntroNames(conn, c("23297Mtp13", "23298Mtp28"))
+##' on.exit(dbDisconnect(conn))
 ##' }
 ##' @export
-getIntroName <- function(conn, intro.codes){
+getIntroNames <- function(conn, intro.codes){
   stopifnot(is.vector(intro.codes),
             all(! duplicated(intro.codes)))
 
-  intro.names <- sapply(intro.codes, function(intro.code){
-    query <- paste0("SELECT NomIntro",
-                    " FROM `NV-INTRODUCTIONS`",
-                    " WHERE CodeIntro=\"",
-                    intro.code, "\"")
-    res <- dbSendQuery(conn, query)
-    tmp <- dbFetch(res)
-    tmp$NomIntro
-  })
+  query <- paste0("SELECT CodeIntro,NomIntro",
+                  " FROM `NV-INTRODUCTIONS`",
+                  " WHERE CodeIntro IN (",
+                  paste(paste0("\"", intro.codes, "\""), collapse=","),
+                  ")")
+  res <- dbSendQuery(conn, query)
+  tmp <- dbFetch(res)
+  dbClearResult(res)
 
-  return(intro.names)
+  out <- tmp
+  colnames(out) <- c("intro.code", "intro.name")
+
+  return(out)
 }
 
 ##' Variety/Population level
@@ -55,43 +57,45 @@ getIntroName <- function(conn, intro.codes){
 ##' Return the variety/population codes and names from a set of introduction/accession codes.
 ##' @param conn a DBIConnection object, as produced by dbConnect
 ##' @param intro.codes vector of introduction codes ("CodeIntro")
-##' @return data.frame of variety codes and names
+##' @return data frame of variety codes and names
 ##' @author Timothée Flutre
 ##' @examples
 ##' \dontrun{## obviously, you must have read access to the database
-##' library(RMySQL)
+##' library(rfcvquery)
 ##' library(getPass)
 ##' conn <- dbConnect(drv=MySQL(), host="...", dbname="...",
 ##'                   user="...", password=getPass())
 ##' getVarietyCodeName(conn, c("23297Mtp13", "23298Mtp28"))
-##' on.exit(dbDisconnect(con))
+##' on.exit(dbDisconnect(conn))
 ##' }
 ##' @export
-getVarietyCodeName <- function(conn, intro.codes){
+getVarietyCodesNames <- function(conn, intro.codes){
   stopifnot(is.vector(intro.codes))
 
-  variety.codes <- sapply(intro.codes, function(intro.code){
-    query <- paste0("SELECT CodeVar",
-                    " FROM `NV-INTRODUCTIONS`",
-                    " WHERE CodeIntro=\"",
-                    intro.code, "\"")
-    res <- dbSendQuery(conn, query)
-    tmp <- dbFetch(res)
-    tmp$CodeVar
-  })
+  query <- paste0("SELECT CodeIntro,CodeVar",
+                  " FROM `NV-INTRODUCTIONS`",
+                  " WHERE CodeIntro IN (",
+                  paste(paste0("\"", intro.codes, "\""), collapse=","),
+                  ")")
+  res <- dbSendQuery(conn, query)
+  ic2vc <- dbFetch(res)
+  dbClearResult(res)
 
-  variety.names <- sapply(variety.codes, function(variety.code){
-    query <- paste0("SELECT NomVar",
-                    " FROM `NV-VARIETES`",
-                    " WHERE CodeVar=\"",
-                    variety.code, "\"")
-    res <- dbSendQuery(conn, query)
-    tmp <- dbFetch(res)
-    tmp$NomVar
-  })
+  query <- paste0("SELECT CodeVar,NomVar",
+                  " FROM `NV-VARIETES`",
+                  " WHERE CodeVar IN (",
+                  paste(paste0("\"", ic2vc$CodeVar, "\""), collapse=","),
+                  ")")
+  res <- dbSendQuery(conn, query)
+  cv2nv <- dbFetch(res)
+  dbClearResult(res)
 
-  return(data.frame(CodeVar=variety.codes,
-                    NomVar=variety.names))
+  out <- cbind(ic2vc,
+               cv2nv$NomVar[match(cv2nv$CodeVar, ic2vc$CodeVar)])
+  out[] <- lapply(out, as.character)
+  colnames(out) <- c("intro.code", "var.code", "var.name")
+
+  return(out)
 }
 
 ##' Variety/Population level
@@ -111,6 +115,7 @@ getTemplateInsertVariety <- function(conn){
                   ", \"23298\")") # Syrah x Grenache
   res <- dbSendQuery(conn, query)
   out <- dbFetch(res)
+  dbClearResult(res)
   return(out)
 }
 
@@ -123,32 +128,29 @@ getTemplateInsertVariety <- function(conn){
 ##' @author Timothee Flutre
 ##' @examples
 ##' \dontrun{## obviously, you must have read access to the database
-##' library(RMySQL)
+##' library(rfcvquery)
 ##' library(getPass)
 ##' conn <- dbConnect(drv=MySQL(), host="...", dbname="...",
 ##'                   user="...", password=getPass())
 ##' variety.codes <- c("18", "300", "195")
 ##' getVarietyColor(conn, variety.codes)
-##' on.exit(dbDisconnect(con))
+##' on.exit(dbDisconnect(conn))
 ##' }
 ##' @export
 getVarietyColors <- function(conn, variety.codes){
   stopifnot(is.vector(variety.codes))
 
-  out <- data.frame(CodeVar=variety.codes,
-                    stringsAsFactors=FALSE)
-
-  query <- paste0("SELECT NomVar,CouleurPel,CouleurPulp",
+  query <- paste0("SELECT CodeVar,NomVar,CouleurPel,CouleurPulp",
                   " FROM `NV-VARIETES`",
                   " WHERE CodeVar IN (",
                   paste(paste0("\"", variety.codes, "\""), collapse=","),
                   ")")
   res <- dbSendQuery(conn, query)
-  tmp <- dbFetch(res)
+  out <- dbFetch(res)
+  dbClearResult(res)
 
-  out$NameVar <- tmp[,1]
-  out$SkinCol <- tmp[,2]
-  out$PulpCol <- tmp[,3]
+  out[] <- lapply(out, as.character)
+  colnames(out) <- c("var.code", "var.name", "skin.col", "pulp.col")
 
   return(out)
 }

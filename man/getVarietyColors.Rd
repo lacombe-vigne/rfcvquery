@@ -19,13 +19,13 @@ Return the skin and pul colors from a set of variety codes.
 }
 \examples{
 \dontrun{## obviously, you must have read access to the database
-library(RMySQL)
+library(rfcvquery)
 library(getPass)
 conn <- dbConnect(drv=MySQL(), host="...", dbname="...",
                   user="...", password=getPass())
 variety.codes <- c("18", "300", "195")
 getVarietyColor(conn, variety.codes)
-on.exit(dbDisconnect(con))
+on.exit(dbDisconnect(conn))
 }
 }
 \author{

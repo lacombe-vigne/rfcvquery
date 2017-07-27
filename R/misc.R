@@ -17,6 +17,7 @@
 ## <http://www.gnu.org/licenses/>.
 
 ##' @import DBI
+##' @import RMySQL
 
 .onAttach <- function(libname, pkgname) {
   if(! requireNamespace("utils", quietly=TRUE))
@@ -29,3 +30,15 @@
                 "\nLicense GNU AGPL version 3 or later")
   packageStartupMessage(msg)
 }
+
+##' rfcvquery: A package to query the RFCV database.
+##'
+##' To use this package, a "read" access to the MySQL database is required.
+##'
+##' @section Encoding:
+##' Note that the content of the database is in the \href{https://en.wikipedia.org/wiki/ISO/IEC_8859}{ISO-8859-1} standard of character encoding.
+##' As such, once the result of a query is available, it may be useful to use the following function: \code{res.new <- iconv(res, from="ISO-8859-1", to="UTF-8")}.
+##'
+##' @docType package
+##' @name rfcvquery
+NULL
