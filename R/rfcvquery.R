@@ -113,3 +113,42 @@ getTemplateInsertVariety <- function(conn){
   out <- dbFetch(res)
   return(out)
 }
+
+##' Skin and pulp colors
+##'
+##' Return the skin and pul colors from a set of variety codes.
+##' @param conn a DBIConnection object, as produced by dbConnect
+##' @param variety.codes vector of variety codes ("CodeVar")
+##' @return data.frame of variety codes, names and colors
+##' @author Timothee Flutre
+##' @examples
+##' \dontrun{## obviously, you must have read access to the database
+##' library(RMySQL)
+##' library(getPass)
+##' conn <- dbConnect(drv=MySQL(), host="...", dbname="...",
+##'                   user="...", password=getPass())
+##' variety.codes <- c("18", "300", "195")
+##' getVarietyColor(conn, variety.codes)
+##' on.exit(dbDisconnect(con))
+##' }
+##' @export
+getVarietyColors <- function(conn, variety.codes){
+  stopifnot(is.vector(variety.codes))
+
+  out <- data.frame(CodeVar=variety.codes,
+                    stringsAsFactors=FALSE)
+
+  query <- paste0("SELECT NomVar,CouleurPel,CouleurPulp",
+                  " FROM `NV-VARIETES`",
+                  " WHERE CodeVar IN (",
+                  paste(paste0("\"", variety.codes, "\""), collapse=","),
+                  ")")
+  res <- dbSendQuery(conn, query)
+  tmp <- dbFetch(res)
+
+  out$NameVar <- tmp[,1]
+  out$SkinCol <- tmp[,2]
+  out$PulpCol <- tmp[,3]
+
+  return(out)
+}

@@ -3,4 +3,5 @@
 export(getIntroName)
 export(getTemplateInsertVariety)
 export(getVarietyCodeName)
+export(getVarietyColors)
 import(DBI)
