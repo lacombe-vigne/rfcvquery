@@ -1,4 +1,4 @@
-## Copyright 2015-2017 Institut National de la Recherche Agronomique (INRA)
+## Copyright 2015-2018 Institut National de la Recherche Agronomique (INRA)
 ##
 ## This file is part of rfcvquery.
 ##
@@ -57,7 +57,7 @@ getIntroNames <- function(conn, intro.codes){
 ##' Return the variety/population codes and names from a set of introduction/accession codes.
 ##' @param conn a DBIConnection object, as produced by dbConnect
 ##' @param intro.codes vector of introduction codes ("CodeIntro")
-##' @return data frame of variety codes and names
+##' @return data frame of variety code(s) and name(s), with one row per input intro code (even if there are duplicates)
 ##' @author Timothée Flutre
 ##' @examples
 ##' \dontrun{## obviously, you must have read access to the database
@@ -70,8 +70,16 @@ getIntroNames <- function(conn, intro.codes){
 ##' }
 ##' @export
 getVarietyCodesNames <- function(conn, intro.codes){
+  if(is.factor(intro.codes))
+    intro.codes <- as.character(intro.codes)
   stopifnot(is.vector(intro.codes))
 
+  out <- data.frame(intro.code=intro.codes,
+                    var.code=NA,
+                    var.name=NA,
+                    stringsAsFactors=FALSE)
+
+  ## retrieve variety code(s)
   query <- paste0("SELECT CodeIntro,CodeVar",
                   " FROM `NV-INTRODUCTIONS`",
                   " WHERE CodeIntro IN (",
@@ -81,6 +89,7 @@ getVarietyCodesNames <- function(conn, intro.codes){
   ic2vc <- dbFetch(res)
   dbClearResult(res)
 
+  ## retrieve variety name(s)
   query <- paste0("SELECT CodeVar,NomVar",
                   " FROM `NV-VARIETES`",
                   " WHERE CodeVar IN (",
@@ -90,10 +99,21 @@ getVarietyCodesNames <- function(conn, intro.codes){
   cv2nv <- dbFetch(res)
   dbClearResult(res)
 
-  out <- cbind(ic2vc,
-               cv2nv$NomVar[match(cv2nv$CodeVar, ic2vc$CodeVar)])
+  ## fill the output
+  for(intro.code in unique(out$intro.code)){
+    idx <- which(ic2vc$CodeIntro == intro.code)
+    if(length(idx) == 0){
+      msg <- paste0("can't find variety code for intro code '",
+                    intro.code, "'")
+      warning(msg)
+    } else{
+      var.code <- ic2vc$CodeVar[idx]
+      out$var.code[out$intro.code == intro.code] <- var.code
+      var.name <- cv2nv$NomVar[cv2nv$CodeVar == var.code]
+      out$var.name[out$intro.code == intro.code] <- var.name
+    }
+  }
   out[] <- lapply(out, as.character)
-  colnames(out) <- c("intro.code", "var.code", "var.name")
 
   return(out)
 }

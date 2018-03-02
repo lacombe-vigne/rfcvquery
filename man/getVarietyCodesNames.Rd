@@ -12,7 +12,7 @@ getVarietyCodesNames(conn, intro.codes)
 \item{intro.codes}{vector of introduction codes ("CodeIntro")}
 }
 \value{
-data frame of variety codes and names
+data frame of variety code(s) and name(s), with one row per input intro code (even if there are duplicates)
 }
 \description{
 Return the variety/population codes and names from a set of introduction/accession codes.

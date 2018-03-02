@@ -1,4 +1,4 @@
-## Copyright 2015-2017 Institut National de la Recherche Agronomique (INRA)
+## Copyright 2015-2018 Institut National de la Recherche Agronomique (INRA)
 ##
 ## This file is part of rfcvquery.
 ##
@@ -26,7 +26,7 @@
   msg <- paste0("package '", pkgname,
                 "' (version ", utils::packageVersion(pkgname), ")",
                 " is loaded",
-                "\nCopyright 2015-2017 Institut National de la Recherche Agronomique (INRA)",
+                "\nCopyright 2015-2018 Institut National de la Recherche Agronomique (INRA)",
                 "\nLicense GNU AGPL version 3 or later")
   packageStartupMessage(msg)
 }
